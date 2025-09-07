@@ -21,15 +21,7 @@ class SistemaNominas:
         self.repo_nominas = RepositorioNominasJSON()
     
     # --- CRUD EMPLEADOS ---
-    def crear_empleado(self, cedula: str, nombre: str, sueldo: float, 
-                      departamento: str, cargo: str) -> Empleado:
-        """
-        Crea un nuevo empleado con validación
-        """
-        empleado = Empleado(cedula, nombre, sueldo, departamento, cargo)
-        self.repo_empleados.guardar(empleado)
-        return empleado
-    
+
     def obtener_empleado(self, cedula: str) -> Optional[Empleado]:
         """
         Obtiene un empleado por cédula
@@ -60,14 +52,7 @@ class SistemaNominas:
         Elimina un empleado
         """
         return self.repo_empleados.eliminar(cedula)
-    
-    # --- OPERACIONES DE NÓMINA ---
-    def generar_nomina_mensual(self, aniomes: str) -> Nomina:
-        """
-        Genera una nómina mensual para todos los empleados
-        """
-        empleados = self.repo_empleados.obtener_todos()
-        
+
         # Crear nómina
         nomina = Nomina(self._obtener_proximo_id(), aniomes)
         
