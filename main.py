@@ -1,5 +1,4 @@
 from sistema import SistemaNominas 
-from utils import input_helpers
 
 def mostrar_menu():
     """
@@ -344,8 +343,10 @@ def main():
             elif opcion == "2":
                 menu_nominas(sistema)
             elif opcion == "3":
-                menu_estadisticas(sistema)
+                menu_nominas(sistema)  # Para consultar nóminas
             elif opcion == "4":
+                menu_estadisticas(sistema)  # Para estadísticas
+            elif opcion == "5":
                 print("\n👋 ¡Hasta pronto!")
                 break
             else:

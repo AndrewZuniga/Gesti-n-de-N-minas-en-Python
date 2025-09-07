@@ -5,5 +5,12 @@
     "sueldo": 1100.0,
     "departamento": "Ventas",
     "cargo": "Asesora"
+  },
+  {
+    "cedula": "0987654321",
+    "nombre": "Ruth",
+    "sueldo": 1500.0,
+    "departamento": "test",
+    "cargo": "test"
   }
 ]

@@ -59,8 +59,15 @@ def validar_nombre(func: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         nombre = None
         
+        print(f"🔍 DEBUG validar_nombre: args={args}")  # ← AGREGA ESTO
+        print(f"🔍 DEBUG validar_nombre: kwargs={kwargs}")  # ← AGREGA ESTO
+        
         if 'nombre' in kwargs:
             nombre = kwargs['nombre']
+        elif len(args) > 2:  # nombre es usualmente el tercer argumento
+            nombre = args[2]
+        
+        print(f"🔍 DEBUG validar_nombre: nombre='{nombre}'")  # ← AGREGA ESTO
         
         # Validar que no esté vacío
         if not nombre or nombre.strip() == "":
@@ -70,6 +77,10 @@ def validar_nombre(func: Callable) -> Callable:
             # Validar que el nombre solo contenga letras y espacios
             if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$', nombre):
                 raise ValueError("❌ El nombre solo puede contener letras y espacios")
+            
+            # Validar longitud mínima
+            if len(nombre.strip()) < 2:
+                raise ValueError("❌ El nombre debe tener al menos 2 caracteres")
         
         return func(*args, **kwargs)
     return wrapper

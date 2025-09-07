@@ -1,0 +1,31 @@
+{
+  "id": 1,
+  "aniomes": "202401",
+  "tot_ing": 2500,
+  "tot_des": 600,
+  "neto": 1900,
+  "detalles": [
+    {
+      "id": 1,
+      "empleado": "Ana Torres",
+      "sueldo": 1000,
+      "bono": 50,
+      "tot_ing": 1050,
+      "iess": 94.5,
+      "prestamo": 20,
+      "tot_des": 114.5,
+      "neto": 935.5
+    },
+    {
+      "id": 2,
+      "empleado": "Luis Pérez",
+      "sueldo": 1200,
+      "bono": 50,
+      "tot_ing": 1250,
+      "iess": 113.4,
+      "prestamo": 20,
+      "tot_des": 133.4,
+      "neto": 1116.6
+    }
+  ]
+}

@@ -13,9 +13,19 @@ class DetalleNomina:
         self.neto = self.tot_ing - self.tot_des
     
     def to_dict(self) -> Dict:
+        """
+        Convierte el detalle a diccionario para serialización JSON
+        DEBE guardar TODOS los datos del empleado, no solo el nombre
+        """
         return {
             'id': self.id,
-            'empleado': self.empleado.nombre,
+            'empleado': {
+                'cedula': self.empleado.cedula,
+                'nombre': self.empleado.nombre,
+                'sueldo': self.empleado.sueldo,
+                'departamento': self.empleado.departamento,
+                'cargo': self.empleado.cargo
+            },
             'sueldo': self.sueldo,
             'bono': self.bono,
             'tot_ing': self.tot_ing,

@@ -1,0 +1,43 @@
+{
+  "id": 3,
+  "aniomes": "202509",
+  "tot_ing": 2700.0,
+  "tot_des": 285.7,
+  "neto": 2414.3,
+  "detalles": [
+    {
+      "id": 1,
+      "empleado": {
+        "cedula": "0955405998",
+        "nombre": "Andrew",
+        "sueldo": 1100.0,
+        "departamento": "Ventas",
+        "cargo": "Asesora"
+      },
+      "sueldo": 1100.0,
+      "bono": 50.0,
+      "tot_ing": 1150.0,
+      "iess": 103.95,
+      "prestamo": 20.0,
+      "tot_des": 123.95,
+      "neto": 1026.05
+    },
+    {
+      "id": 2,
+      "empleado": {
+        "cedula": "0987654321",
+        "nombre": "Ruth",
+        "sueldo": 1500.0,
+        "departamento": "test",
+        "cargo": "test"
+      },
+      "sueldo": 1500.0,
+      "bono": 50.0,
+      "tot_ing": 1550.0,
+      "iess": 141.75,
+      "prestamo": 20.0,
+      "tot_des": 161.75,
+      "neto": 1388.25
+    }
+  ]
+}

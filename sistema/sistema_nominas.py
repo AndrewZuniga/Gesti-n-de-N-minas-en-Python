@@ -10,6 +10,7 @@ from utils import (
     generar_estadisticas_avanzadas,
     calcular_metricas_departamento
 )
+
 class SistemaNominas:
     """
     Sistema principal que coordina todas las operaciones de nómina
@@ -21,10 +22,12 @@ class SistemaNominas:
         self.repo_nominas = RepositorioNominasJSON()
     
     # --- CRUD EMPLEADOS ---
+    @manejar_errores
+    @log_operacion
     def crear_empleado(self, cedula: str, nombre: str, sueldo: float, 
-                      departamento: str, cargo: str) -> Empleado:
+                      departamento: str, cargo: str) -> Optional[Empleado]:
         """
-        Crea un nuevo empleado con validación
+        Crea un nuevo empleado con validación y logging
         """
         empleado = Empleado(cedula, nombre, sueldo, departamento, cargo)
         self.repo_empleados.guardar(empleado)
@@ -62,16 +65,21 @@ class SistemaNominas:
         return self.repo_empleados.eliminar(cedula)
     
     # --- OPERACIONES DE NÓMINA ---
-    def generar_nomina_mensual(self, aniomes: str) -> Nomina:
+    @manejar_errores
+    def generar_nomina_mensual(self, aniomes: str) -> Optional[Nomina]:
         """
-        Genera una nómina mensual para todos los empleados
+        Genera una nómina mensual con manejo de errores
         """
         empleados = self.repo_empleados.obtener_todos()
+        
+        if not empleados:
+            print("⚠️ No hay empleados para generar nómina")
+            return None
         
         # Crear nómina
         nomina = Nomina(self._obtener_proximo_id(), aniomes)
         
-        # Generar detalles para cada empleado usando enumerate
+        # Generar detalles para cada empleado
         for i, empleado in enumerate(empleados, 1):
             detalle = DetalleNomina(
                 id=i,
@@ -84,6 +92,7 @@ class SistemaNominas:
         
         # Guardar nómina
         self.repo_nominas.guardar(nomina)
+        print(f"✅ Nómina {aniomes} generada con {len(empleados)} empleados")
         return nomina
     
     def _obtener_proximo_id(self) -> int:
@@ -152,35 +161,53 @@ class SistemaNominas:
         """
         Genera un reporte completo en formato texto
         """
-        stats = self.generar_estadisticas_nomina(aniomes)
-        if not stats:
-            return f"No se encontró nómina para el período {aniomes}"
-        
-        reporte = f"""
-        📊 REPORTE COMPLETO DE NÓMINA - {aniomes}
-        {'=' * 50}
-        
-        👥 EMPLEADOS:
-        • Total: {stats['total_empleados']}
-        • Nómina neta total: ${stats['total_neto']:,.2f}
-        • Promedio sueldo: ${stats['promedio_sueldo']:,.2f}
-        • Promedio neto: ${stats['promedio_neto']:,.2f}
-        
-        💰 INGRESOS Y DESCUENTOS:
-        • Total bonos: ${stats['total_bonos']:,.2f}
-        • Total aporte IESS: ${stats['total_aporte_iess']:,.2f}
-        
-        🏆 DESTACADOS:
-        • Empleado mayor neto: {stats['empleado_mayor_neto'].empleado.nombre if stats['empleado_mayor_neto'] else 'N/A'} (${stats['empleado_mayor_neto'].neto:,.2f if stats['empleado_mayor_neto'] else 0})
-        • Empleado menor neto: {stats['empleado_menor_neto'].empleado.nombre if stats['empleado_menor_neto'] else 'N/A'} (${stats['empleado_menor_neto'].neto:,.2f if stats['empleado_menor_neto'] else 0})
-        • Empleado mayor sueldo: {stats['empleado_mayor_sueldo'].empleado.nombre if stats['empleado_mayor_sueldo'] else 'N/A'} (${stats['empleado_mayor_sueldo'].sueldo:,.2f if stats['empleado_mayor_sueldo'] else 0})
-        
-        📈 DISTRIBUCIÓN:
-        • Empleados con sueldo > $1000: {len(stats['empleados_alto_sueldo'])}
-        • Empleados con sueldo ≤ $1000: {len(stats['empleados_bajo_sueldo'])}
-        """
-        
-        return reporte
+        try:
+            stats = self.generar_estadisticas_nomina(aniomes)
+            if not stats:
+                return f"❌ No se encontró nómina para el período {aniomes}"
+            
+            # Agrega validaciones para evitar None
+            empleado_mayor_neto = stats.get('empleado_mayor_neto')
+            empleado_menor_neto = stats.get('empleado_menor_neto')
+            empleado_mayor_sueldo = stats.get('empleado_mayor_sueldo')
+            
+            # Prepara los valores para el reporte
+            nombre_mayor_neto = empleado_mayor_neto.empleado.nombre if empleado_mayor_neto else 'N/A'
+            neto_mayor_neto = empleado_mayor_neto.neto if empleado_mayor_neto else 0
+            
+            nombre_menor_neto = empleado_menor_neto.empleado.nombre if empleado_menor_neto else 'N/A'
+            neto_menor_neto = empleado_menor_neto.neto if empleado_menor_neto else 0
+            
+            nombre_mayor_sueldo = empleado_mayor_sueldo.empleado.nombre if empleado_mayor_sueldo else 'N/A'
+            sueldo_mayor_sueldo = empleado_mayor_sueldo.sueldo if empleado_mayor_sueldo else 0
+            
+            reporte = f"""
+            📊 REPORTE COMPLETO DE NÓMINA - {aniomes}
+            {'=' * 50}
+            
+            👥 EMPLEADOS:
+            • Total: {stats.get('total_empleados', 0)}
+            • Nómina neta total: ${stats.get('total_neto', 0):,.2f}
+            • Promedio sueldo: ${stats.get('promedio_sueldo', 0):,.2f}
+            • Promedio neto: ${stats.get('promedio_neto', 0):,.2f}
+            
+            💰 INGRESOS Y DESCUENTOS:
+            • Total bonos: ${stats.get('total_bonos', 0):,.2f}
+            • Total aporte IESS: ${stats.get('total_aporte_iess', 0):,.2f}
+            
+            🏆 DESTACADOS:
+            • Empleado mayor neto: {nombre_mayor_neto} (${neto_mayor_neto:,.2f})
+            • Empleado menor neto: {nombre_menor_neto} (${neto_menor_neto:,.2f})
+            • Empleado mayor sueldo: {nombre_mayor_sueldo} (${sueldo_mayor_sueldo:,.2f})
+            
+            📈 DISTRIBUCIÓN:
+            • Empleados con sueldo > $1000: {len(stats.get('empleados_alto_sueldo', []))}
+            • Empleados con sueldo ≤ $1000: {len(stats.get('empleados_bajo_sueldo', []))}
+            """
+            
+            return reporte
+        except Exception as e:
+            return f"❌ Error generando reporte: {e}"
     
     # --- MÉTODOS CON LAMBDAS AVANZADAS ---
     def buscar_empleados_por(self, condicion) -> List[Empleado]:
@@ -192,54 +219,14 @@ class SistemaNominas:
         return list(filter(condicion, empleados))
     
     def calcular_total_nominas(self) -> float:
-        """
-        Calcula el total de todas las nóminas usando reduce
-        """
-        nominas = self.listar_nominas()
-        total = reduce(lambda acc, aniomes: acc + (self.obtener_nomina(aniomes).neto if self.obtener_nomina(aniomes) else 0), 
-                      nominas, 0.0)
-        return total
-    
-    @manejar_errores
-    @log_operacion
-    def crear_empleado(self, cedula: str, nombre: str, sueldo: float, 
-                      departamento: str, cargo: str) -> Optional[Empleado]:
-        """
-        Crea un nuevo empleado con validación y logging
-        """
-        empleado = Empleado(cedula, nombre, sueldo, departamento, cargo)
-        self.repo_empleados.guardar(empleado)
-        return empleado
-    
-    @manejar_errores
-    def generar_nomina_mensual(self, aniomes: str) -> Optional[Nomina]:
-        """
-        Genera una nómina mensual con manejo de errores
-        """
-        empleados = self.repo_empleados.obtener_todos()
-        
-        if not empleados:
-            print("⚠️ No hay empleados para generar nómina")
-            return None
-        
-        # Crear nómina
-        nomina = Nomina(self._obtener_proximo_id(), aniomes)
-        
-        # Generar detalles para cada empleado
-        for i, empleado in enumerate(empleados, 1):
-            detalle = DetalleNomina(
-                id=i,
-                empleado=empleado,
-                sueldo=empleado.sueldo,
-                bono=Nomina.BONO,
-                prestamo=Nomina.PRESTAMO
-            )
-            nomina.agregar_detalle(detalle)
-        
-        # Guardar nómina
-        self.repo_nominas.guardar(nomina)
-        print(f"✅ Nómina {aniomes} generada con {len(empleados)} empleados")
-        return nomina
+            """
+            Calcula el total de todas las nóminas usando reduce
+            """
+            nominas = self.listar_nominas()
+            total = reduce(lambda acc, aniomes: acc + (self.obtener_nomina(aniomes).neto 
+                  if self.obtener_nomina(aniomes) else 0.0), 
+                  nominas, 0.0)
+            return total
     
     def generar_estadisticas_avanzadas(self, aniomes: str) -> Dict:
         """

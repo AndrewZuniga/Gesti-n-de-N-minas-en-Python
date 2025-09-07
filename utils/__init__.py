@@ -36,5 +36,4 @@ __all__ = [
     'calcular_distribucion_sueldos',
     'generar_estadisticas_avanzadas',
     'calcular_metricas_departamento',
-    'input_numero'
 ]

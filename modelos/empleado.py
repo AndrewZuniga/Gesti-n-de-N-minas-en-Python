@@ -1,8 +1,8 @@
 from typing import Dict
-from utils.decoradores import validar_empleado_completo
+#from utils.decoradores import validar_empleado_completo
 
 class Empleado:
-    @validar_empleado_completo
+    #@validar_empleado_completo
     def __init__(self, cedula: str, nombre: str, sueldo: float, 
                  departamento: str, cargo: str):
         self.cedula = cedula
