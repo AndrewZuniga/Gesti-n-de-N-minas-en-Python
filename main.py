@@ -61,7 +61,7 @@ def menu_empleados(sistema: SistemaNominas):
     while True:
         print("\n👥 GESTIÓN DE EMPLEADOS")
         print("1. Crear empleado")
-        print("2. Listar empleados")
+        print("2. Lista empleados")
         print("3. Buscar empleado")
         print("4. Actualizar empleado")
         print("5. Eliminar empleado")

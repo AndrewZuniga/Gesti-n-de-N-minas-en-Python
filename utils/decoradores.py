@@ -1,26 +1,26 @@
 from typing import Callable, Any
+from functools import wraps
 import re
+
+# Decoradores de Validación
+#
+# Estos decoradores verifican que los datos del empleado sean correctos.
+# Usan functools.wraps para preservar los metadatos de la función original
+# y buscan los argumentos por su nombre para ser más flexibles.
 
 def validar_cedula(func: Callable) -> Callable:
     """
-    Decorador para validar que la cédula tenga 10 dígitos y no esté vacía
+    Decorador para validar que la cédula tenga 10 dígitos y no esté vacía.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        # Extraer cédula de args o kwargs
-        cedula = None
-        
-        # Buscar en kwargs
-        if 'cedula' in kwargs:
-            cedula = kwargs['cedula']
-        # Buscar en args (generalmente es el segundo argumento después de self)
-        elif len(args) > 1:
+        cedula = kwargs.get('cedula', None)
+        if cedula is None and len(args) > 1:
             cedula = args[1]
         
-        # Validar que no esté vacía
-        if not cedula or cedula.strip() == "":
+        if not cedula or not isinstance(cedula, str) or cedula.strip() == "":
             raise ValueError("❌ La cédula no puede estar vacía")
         
-        # Validar que tenga exactamente 10 dígitos numéricos
         if not cedula.isdigit() or len(cedula) != 10:
             raise ValueError("❌ La cédula debe tener exactamente 10 dígitos numéricos")
         
@@ -29,23 +29,17 @@ def validar_cedula(func: Callable) -> Callable:
 
 def validar_sueldo_positivo(func: Callable) -> Callable:
     """
-    Decorador para validar que el sueldo sea positivo
+    Decorador para validar que el sueldo sea un valor numérico positivo.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        # Extraer sueldo de args o kwargs
-        sueldo = None
-        
-        # Buscar en kwargs
-        if 'sueldo' in kwargs:
-            sueldo = kwargs['sueldo']
-        # Buscar en args 
-        elif len(args) > 3:  # sueldo es usualmente el cuarto argumento
+        sueldo = kwargs.get('sueldo', None)
+        if sueldo is None and len(args) > 3:
             sueldo = args[3]
         
-        # Validar que no sea None o vacío
-        if sueldo is None:
-            raise ValueError("❌ El sueldo no puede estar vacío")
-        
+        if not sueldo or not isinstance(sueldo, (int, float)):
+            raise ValueError("❌ El sueldo debe ser un valor numérico")
+            
         if sueldo <= 0:
             raise ValueError("❌ El sueldo debe ser un valor positivo")
         
@@ -54,20 +48,16 @@ def validar_sueldo_positivo(func: Callable) -> Callable:
 
 def validar_nombre(func: Callable) -> Callable:
     """
-    Decorador para validar que el nombre sea válido y no esté vacío
+    Decorador para validar que el nombre no esté vacío y solo contenga letras.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         nombre = None
-        
-        print(f"🔍 DEBUG validar_nombre: args={args}")  # ← AGREGA ESTO
-        print(f"🔍 DEBUG validar_nombre: kwargs={kwargs}")  # ← AGREGA ESTO
         
         if 'nombre' in kwargs:
             nombre = kwargs['nombre']
         elif len(args) > 2:  # nombre es usualmente el tercer argumento
             nombre = args[2]
-        
-        print(f"🔍 DEBUG validar_nombre: nombre='{nombre}'")  # ← AGREGA ESTO
         
         # Validar que no esté vacío
         if not nombre or nombre.strip() == "":
@@ -87,17 +77,14 @@ def validar_nombre(func: Callable) -> Callable:
 
 def validar_departamento(func: Callable) -> Callable:
     """
-    Decorador para validar el departamento y que no esté vacío
+    Decorador para validar que el departamento no esté vacío y tenga al menos 2 caracteres.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        departamento = None
-        
-        if 'departamento' in kwargs:
-            departamento = kwargs['departamento']
-        elif len(args) > 4:  # departamento es usualmente el quinto argumento
+        departamento = kwargs.get('departamento', None)
+        if departamento is None and len(args) > 4:
             departamento = args[4]
-        
-        # Validar que no esté vacío
+
         if not departamento or departamento.strip() == "":
             raise ValueError("❌ El departamento no puede estar vacío")
         
@@ -109,17 +96,14 @@ def validar_departamento(func: Callable) -> Callable:
 
 def validar_cargo(func: Callable) -> Callable:
     """
-    Decorador para validar el cargo y que no esté vacío
+    Decorador para validar que el cargo no esté vacío y tenga al menos 2 caracteres.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        cargo = None
-        
-        if 'cargo' in kwargs:
-            cargo = kwargs['cargo']
-        elif len(args) > 5:  # cargo es usualmente el sexto argumento
+        cargo = kwargs.get('cargo', None)
+        if cargo is None and len(args) > 5:
             cargo = args[5]
-        
-        # Validar que no esté vacío
+
         if not cargo or cargo.strip() == "":
             raise ValueError("❌ El cargo no puede estar vacío")
         
@@ -132,25 +116,30 @@ def validar_cargo(func: Callable) -> Callable:
 def validar_empleado_completo(func: Callable) -> Callable:
     """
     Decorador compuesto que aplica todas las validaciones de empleado
+    en una cadena ordenada and robusta.
     """
+    # Se aplican los decoradores de manera anidada, de adentro hacia afuera,
+    # y finalmente se devuelve la función decorada.
+    @wraps(func)
+    @validar_cedula
+    @validar_sueldo_positivo
+    @validar_nombre
+    @validar_departamento
+    @validar_cargo
     def wrapper(*args, **kwargs):
-        # Aplicar todas las validaciones en orden
-        wrapper_validado = validar_cedula(
-            validar_sueldo_positivo(
-                validar_nombre(
-                    validar_departamento(
-                        validar_cargo(func)
-                    )
-                )
-            )
-        )
-        return wrapper_validado(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
+
+# Decoradores de Manejo de Lógica del Sistema
+#
+# Estos decoradores no validan datos, sino que se encargan de la lógica
+# de la aplicación, como el registro de operaciones y el manejo de errores.
 
 def log_operacion(func: Callable) -> Callable:
     """
-    Decorador para loggear operaciones importantes
+    Decorador para registrar una operación exitosa en la consola.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         resultado = func(*args, **kwargs)
         print(f"📝 Operación '{func.__name__}' ejecutada exitosamente")
@@ -159,8 +148,9 @@ def log_operacion(func: Callable) -> Callable:
 
 def manejar_errores(func: Callable) -> Callable:
     """
-    Decorador para manejar errores gracefully
+    Decorador para manejar errores comunes de manera controlada.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)

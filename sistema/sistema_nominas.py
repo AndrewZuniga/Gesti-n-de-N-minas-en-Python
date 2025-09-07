@@ -219,14 +219,14 @@ class SistemaNominas:
         return list(filter(condicion, empleados))
     
     def calcular_total_nominas(self) -> float:
-            """
-            Calcula el total de todas las nóminas usando reduce
-            """
-            nominas = self.listar_nominas()
-            total = reduce(lambda acc, aniomes: acc + (self.obtener_nomina(aniomes).neto 
-                  if self.obtener_nomina(aniomes) else 0.0), 
-                  nominas, 0.0)
-            return total
+        """
+        Calcula el total de todas las nóminas usando reduce
+        """
+        nominas = self.listar_nominas()
+        total = reduce(lambda acc, aniomes: acc + (self.obtener_nomina(aniomes).neto 
+                      if self.obtener_nomina(aniomes) else 0.0), 
+                      nominas, 0.0)
+        return total
     
     def generar_estadisticas_avanzadas(self, aniomes: str) -> Dict:
         """
