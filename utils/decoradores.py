@@ -121,14 +121,15 @@ def validar_cargo(func: Callable) -> Callable:
 def validar_empleado_completo(func: Callable) -> Callable:
     """
     Decorador compuesto que aplica todas las validaciones de empleado
+    en el orden correcto.
     """
     def wrapper(*args, **kwargs):
-        # Aplicar todas las validaciones en orden
-        wrapper_validado = validar_cedula(
-            validar_sueldo_positivo(
-                validar_nombre(
-                    validar_departamento(
-                        validar_cargo(func)
+        # Aplicar las validaciones en el orden deseado
+        wrapper_validado = validar_cargo(
+            validar_departamento(
+                validar_sueldo_positivo(
+                    validar_nombre(
+                        validar_cedula(func)
                     )
                 )
             )
